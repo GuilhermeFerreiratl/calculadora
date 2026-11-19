@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora 256 Dígitos + Fórmula V</title>
+<style>
+    * { box-sizing: border-box; font-family: Arial, sans-serif; }
+  body { background: #0d1117; color: #fff; display: flex; justify-content: center; padding: 20px; margin: 0; }
+  .card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 24px; width: 100%; max-width: 750px; }
+  h1 { margin: 0 0 5px; text-align: center; }
+  p { color: #8b949e; text-align: center; }
+  .tabs { display: flex; gap: 8px; margin: 20px 0; }
+  .tabs button { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #30363d; background: #0d1117; color: #fff; cursor: pointer; font-weight: bold; }
+  .tabs button.ativo { background: #238636; border-color: #238636; }
+  label { display: flex; justify-content: space-between; margin: 16px 0 8px; font-weight: bold; }
+  label span { font-weight: normal; color: #8b949e; font-size: 13px; }
+  textarea { width: 100%; padding: 14px; border-radius: 8px; border: 1px solid #30363d; background: #0d1117; color: #fff; font-size: 15px; min-height: 70px; resize: vertical; }
+  .ops { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 16px; }
+  .ops button { padding: 14px; border: 0; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; color: #fff; }
+  .mais { background: #238636; } .menos { background: #d29922; } .sub { background: #f85149; }
+  .mult { background: #1f6feb; } .div { background: #8957e5; } .mod { background: #da3633; }
+  .btn-calc { width: 100%; margin-top: 16px; padding: 14px; border: 0; border-radius: 8px; background: #238636; color: #fff; font-size: 16px; font-weight: bold; cursor: pointer; }
+  .result { margin-top: 20px; background: #0d1117; border: 1px solid #30363d; border-radius: 8px; padding: 16px; display: none; }
+  .result b { color: #58a6ff; }
+  .result div { word-break: break-all; margin-bottom: 10px; line-height: 1.5; }
+  .ok { color: #3fb950; font-weight: bold; }
+  .exemplo { font-size: 13px; color: #8b949e; margin-top: 10px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Calculadora 256 Dígitos</h1>
+  <p>Mais • Menos • Subtração • Multiplicação • Divisão • Mod</p>
+
+  <div class="tabs">
+    <button id="tabCalc" class="ativo" onclick="mostrarAba('calc')">🧮 Calculadora</button>
+    <button id="tabFormula" onclick="mostrarAba('formula')">⭐ Fórmula V</button>
+  </div>
+
+  <!-- ABA CALCULADORA -->
+  <div id="abaCalc">
+    <label>Primeiro número (A) <span id="countA"></span></label>
+    <textarea id="inputA" maxlength="260" placeholder="Ex: 123456789...">55066263022277343669578718895168534326250603453777594175500187360389116729240</textarea>
+
+    <label>Segundo número (B) <span id="countB"></span></label>
+    <textarea id="inputB" maxlength="260" placeholder="Ex: 987654321...">115792089237316195423570985008687907853269984665640564039457584007908834671663</textarea>
+
+    <div class="ops">
+      <button class="mais" onclick="calcularOp('mais')">+ Mais</button>
+      <button class="menos" onclick="calcularOp('menos')">- Menos</button>
+      <button class="sub" onclick="calcularOp('sub')">- Subtração</button>
+      <button class="mult" onclick="calcularOp('mult')">× Multiplicação</button>
+      <button class="div" onclick="calcularOp('div')">÷ Divisão</button>
+      <button class="mod" onclick="calcularOp('mod')">% Mod / Resto</button>
+    </div>
+
+    <div id="resultadoCalc" class="result"></div>
+    <div class="exemplo">Mod = resto da divisão. Ex: 10 Mod 3 = 1</div>
+  </div>
+
+  <!-- ABA FÓRMULA V -->
+  <div id="abaFormula" style="display:none">
+    <p style="text-align:left"><code>(V * X) - G = k * Y</code><br><code>V = (k * Y + G) / X</code></p>
+    <label>X <span id="countX"></span></label>
+    <textarea id="inputX" maxlength="256">55066263022277343669578718895168534326250603453777594175500187360389116729240</textarea>
+    <label>Y <span id="countY"></span></label>
+    <textarea id="inputY" maxlength="256">115792089237316195423570985008687907853269984665640564039457584007908834671663</textarea>
+    <label>G <span id="countG"></span></label>
+    <textarea id="inputG" maxlength="256" placeholder="Digite o G...">9262728627187266</textarea>
+    <button class="btn-calc" onclick="calcularFormula()">Calcular Fórmula V</button>
+    <div id="resultadoFormula" class="result"></div>
+  </div>
+</div>
+
+<script>
+  function limpo(s){ return s.replace(/[^0-9-]/g,''); }
+  function atualizar(idInput, idCount){
+    const el = document.getElementById(idInput);
+    document.getElementById(idCount).textContent = limpo(el.value).replace('-','').length + " / 256 dígitos";
+  }
+  ["inputA","inputB","inputX","inputY","inputG"].forEach(id=>{
+    const el = document.getElementById(id);
+    el.addEventListener("input", ()=> atualizar(id, "count"+id.replace("input","")));
+    atualizar(id, "count"+id.replace("input",""));
+  });
+
+  function mostrarAba(qual){
+    document.getElementById("abaCalc").style.display = qual==='calc' ? 'block' : 'none';
+    document.getElementById("abaFormula").style.display = qual==='formula' ? 'block' : 'none';
+    document.getElementById("tabCalc").classList.toggle("ativo", qual==='calc');
+    document.getElementById("tabFormula").classList.toggle("ativo", qual==='formula');
+  }
+
+  function pegarAB(){
+    const aStr = limpo(document.getElementById("inputA").value.trim());
+    const bStr = limpo(document.getElementById("inputB").value.trim());
+    if(!aStr || !bStr) throw new Error("Preencha os dois números!");
+    if(aStr.replace('-','').length > 256 || bStr.replace('-','').length > 256) throw new Error("Máximo 256 dígitos!");
+    return [BigInt(aStr), BigInt(bStr)];
+  }
+
+  function calcularOp(op){
+    try{
+      const [A,B] = pegarAB();
+      let simbolo="", resultado;
+      if(op==='mais'){ simbolo=" + "; resultado = A + B; }
+      if(op==='menos' || op==='sub'){ simbolo=" - "; resultado = A - B; }
+      if(op==='mult'){ simbolo=" × "; resultado = A * B; }
+      if(op==='div'){ if(B===0n) throw new Error("Não dá pra dividir por 0!"); simbolo=" ÷ "; resultado = A / B; }
+      if(op==='mod'){ if(B===0n) throw new Error("Não dá pra fazer Mod por 0!"); simbolo=" Mod "; resultado = ((A % B) + B) % B; }
+
+      const res = document.getElementById("resultadoCalc");
+      res.style.display="block";
+      res.innerHTML = `
+        <div><b>${A.toString()}${simbolo}${B.toString()} =</b></div>
+        <div style="font-size:18px"><b>${resultado.toString()}</b></div>
+        <div><small>Resultado com ${resultado.toString().replace('-','').length} dígitos</small></div>
+      `;
+    }catch(e){ alert(e.message); }
+  }
+
+  function inversoModular(a,m){
+    let m0=m, y=0n, x=1n;
+    if(m===1n) return 0n;
+    while(a>1n){ let q=a/m, t=m; m=a%m; a=t; t=y; y=x-q*y; x=t; }
+    if(x<0n) x+=m0;
+    return x;
+  }
+  function calcularFormula(){
+    try{
+      const X=BigInt(limpo(document.getElementById("inputX").value));
+      const Y=BigInt(limpo(document.getElementById("inputY").value));
+      const G=BigInt(limpo(document.getElementById("inputG").value));
+      const inv=inversoModular(((Y%X)+X)%X, X);
+      const k=((-G*inv)%X+X)%X;
+      const V=(k*Y+G)/X;
+      const confere=(V*X-G===k*Y);
+      const res=document.getElementById("resultadoFormula");
+      res.style.display="block";
+      res.innerHTML=`<div><b>G =</b><br>${G}</div><div><b>k =</b><br>${k}</div><div><b>V =</b><br>${V}</div><div class="ok">${confere?"✅ Fechou certinho!":"❌ Erro"}</div>`;
+    }catch(e){ alert("Erro: "+e.message); }
+  }
+</script>
+</body>
+</html>
